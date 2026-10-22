@@ -127,19 +127,64 @@ function overview(overrides: Record<string, unknown> = {}): unknown {
         steps: 900,
         tokens: { input: 1000, output: 500, reasoning: 50, cache: { read: 200, write: 20 } },
         cost: 0.0006,
-        tools: { mode: 'none' },
+        tools: {
+          mode: 'detail',
+          totals: { calls: 4, succeeded: 3, failed: 1, unfinished: 0 },
+          usage: [
+            { name: 'bash', calls: 4, succeeded: 3, failed: 1, unfinished: 0, durationP50: 1500 },
+            { name: 'read', calls: 2, succeeded: 2, failed: 0, unfinished: 0, durationP50: 120 },
+          ],
+        },
         activeDays: 5,
         streak: 2,
         activity: [],
-        models: [],
+        models: [
+          {
+            model: { id: 'claude-sonnet-4-5', providerID: 'anthropic' },
+            steps: 120,
+            tokens: { input: 10, output: 20, reasoning: 5, cache: { read: 1, write: 1 } },
+            cost: 0.0004,
+          },
+        ],
       },
     },
     daily: {
       status: 'ok',
       data: { points: [point('2026-10-21'), point('2026-10-22')], coversWholePeriod: true },
     },
-    sessions: { status: 'ok', data: { items: [], total: 0, complete: true } },
-    agents: { status: 'ok', data: { total: 0, items: [] } },
+    sessions: {
+      status: 'ok',
+      data: {
+        items: [
+          {
+            id: 'ses_1',
+            agent: 'build',
+            model: { id: 'claude-sonnet-4-5', providerID: 'anthropic' },
+            cost: 0.0006,
+            tokens: { input: 10, output: 20, reasoning: 5, cache: { read: 1, write: 1 } },
+            created: Date.parse('2026-10-22T16:00:00Z'),
+            updated: Date.parse('2026-10-22T16:10:00Z'),
+          },
+          {
+            id: 'ses_2',
+            title: 'Corrige o login do painel',
+            cost: 0,
+            tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
+            created: Date.parse('2026-10-21T16:00:00Z'),
+            updated: Date.parse('2026-10-21T16:10:00Z'),
+          },
+        ],
+        total: 2,
+        complete: true,
+      },
+    },
+    agents: {
+      status: 'ok',
+      data: {
+        total: 1,
+        items: [{ id: 'build', name: 'build', mode: 'primary', hidden: false, steps: 12 }],
+      },
+    },
     active: { status: 'ok', data: { total: 0 } },
     service: { status: 'ok', data: { version: '0.0.0', pid: 1, persistentPty: null } },
     location: { status: 'ok', data: { display: '~' } },
@@ -233,6 +278,15 @@ expect(svgs >= 3, 'gráficos montados', `${svgs} svg`);
 expect(axes >= 4, 'gráficos montados', `${axes} eixos`);
 pass('gráficos montados', `${svgs} gráficos com eixos, sem exceção`);
 
+expect(text().includes('claude-sonnet-4-5'), 'modelos', 'ranking não renderizou');
+expect(text().includes('bash'), 'ferramentas', 'tabela não renderizou');
+expect(text().includes('25,0%'), 'ferramentas', 'taxa de falha não saiu como 25,0%');
+expect(text().includes('1,5 s'), 'ferramentas', 'p50 não saiu em segundos');
+expect(text().includes('2 de 2 sessões no período'), 'sessões', 'rodapé de sessões errado');
+expect(text().includes('Sem título'), 'sessões', 'título ausente não virou marcador');
+expect(text().includes('Corrige o login do painel'), 'sessões', 'título comum não apareceu');
+pass('tabelas', 'modelos, ferramentas, agentes e sessões com dado');
+
 response = overview({
   stats: { status: 'error', error: { kind: 'cli-error', message: 'O serviço não respondeu.' } },
   daily: { status: 'error', error: { kind: 'cli-error', message: 'O serviço não respondeu.' } },
@@ -242,10 +296,9 @@ await unmount();
 await mount();
 
 const unavailable = (text().match(/Indisponível nesta leitura/g) ?? []).length;
-expect(unavailable >= 3, 'degradação', `${unavailable} painéis indisponíveis`);
-expect(!text().includes('US$'), 'degradação', 'KPI de custo apareceu sem dados');
+expect(unavailable >= 6, 'degradação', `${unavailable} painéis indisponíveis`);
 expect(text().includes('O serviço não respondeu.'), 'degradação', 'motivo não exibido');
-pass('degradação', 'indicadores e dois painéis com motivo, sem número inventado');
+pass('degradação', 'seis painéis com motivo; sessões e agentes seguem com dado');
 
 response = overview({
   daily: { status: 'ok', data: { points: [], coversWholePeriod: true } },
