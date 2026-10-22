@@ -235,7 +235,8 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
 | 1 — núcleo de dados | concluída em 2026-10-22 | `node scripts/check-overview.ts` — 9 casos |
 | 2 — endpoint `/oc-api/overview` | concluída em 2026-10-22 | `node scripts/check-endpoint.ts` — 200, 400, 405 e queda total |
 | 3 — casca e atualização | concluída em 2026-10-22 | `node scripts/check-refresh.ts` — 9 casos |
-| 4 a 7 | pendente | — |
+| 4 — KPIs e séries | concluída em 2026-10-22 | `node scripts/check-series.ts` — 5 casos; `node scripts/check-panels.ts` — 6 casos |
+| 5 a 7 | pendente | — |
 
 ## Decisões registradas
 
