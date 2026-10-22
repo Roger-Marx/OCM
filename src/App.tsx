@@ -2,6 +2,10 @@ import { ActivityPanel } from './components/charts/ActivityPanel.tsx';
 import { CostPanel } from './components/charts/CostPanel.tsx';
 import { TokenPanel } from './components/charts/TokenPanel.tsx';
 import { KpiSection } from './components/KpiSection.tsx';
+import { AgentsPanel } from './components/panels/AgentsPanel.tsx';
+import { ModelsPanel } from './components/panels/ModelsPanel.tsx';
+import { SessionsPanel } from './components/panels/SessionsPanel.tsx';
+import { ToolsPanel } from './components/panels/ToolsPanel.tsx';
 import { TopBar, type ServiceState } from './components/TopBar.tsx';
 import { useOverview } from './client/useOverview.ts';
 
@@ -59,6 +63,11 @@ export function App() {
             </div>
 
             <CostPanel daily={data.daily} />
+
+            <ModelsPanel stats={data.stats} />
+            <AgentsPanel agents={data.agents} />
+            <ToolsPanel stats={data.stats} />
+            <SessionsPanel sessions={data.sessions} />
 
             <section className="rounded-xl border border-neutral-200 bg-white px-5 py-4">
               <h2 className="text-sm font-semibold">De onde vêm os números</h2>

@@ -1,4 +1,5 @@
 import type { DailyPoint } from '../api/overview.ts';
+import type { TokenUsage } from '../contract/types.ts';
 
 /**
  * Transformações da série diária para o formato que o Recharts consome.
@@ -6,6 +7,10 @@ import type { DailyPoint } from '../api/overview.ts';
  * Ficam fora dos componentes de propósito: `null` é lacuna, não zero, e essa
  * regra precisa de teste sem DOM.
  */
+
+export function totalTokens(tokens: TokenUsage): number {
+  return tokens.input + tokens.output + tokens.reasoning + tokens.cache.read + tokens.cache.write;
+}
 
 export interface ActivityRow {
   date: string;
