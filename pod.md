@@ -199,15 +199,15 @@ Skills: `code-review-rubric`, `commit-style`, `diagnosing-bugs`.
 
 ## Definição de pronto da v1
 
-- [ ] Todos os itens de **Interface** do PRD existem e respondem ao período escolhido.
-- [ ] As seis rotas do PRD são consumidas pelo servidor, e nenhuma pelo navegador.
-- [ ] Cada rota pode falhar sozinha sem derrubar o dashboard.
-- [ ] Cache de 10 s e atualização de 30 s com pausa funcionam como descrito.
-- [ ] Nada é gravado em disco, banco ou `localStorage`.
-- [ ] Nenhuma requisição sai para host diferente de `localhost`.
-- [ ] Token, header de autenticação e prompt não aparecem em tela, log ou URL.
-- [ ] A interface roda em `localhost`, sem CDN e sem fonte remota.
-- [ ] O que está em **Fora de escopo (v1)** do PRD continua fora.
+- [x] Todos os itens de **Interface** do PRD existem e respondem ao período escolhido.
+- [x] As seis rotas do PRD são consumidas pelo servidor, e nenhuma pelo navegador.
+- [x] Cada rota pode falhar sozinha sem derrubar o dashboard.
+- [x] Cache de 10 s e atualização de 30 s com pausa funcionam como descrito.
+- [x] Nada é gravado em disco, banco ou `localStorage`.
+- [x] Nenhuma requisição sai para host diferente de `localhost`.
+- [x] Token, header de autenticação e prompt não aparecem em tela, log ou URL.
+- [x] A interface roda em `localhost`, sem CDN e sem fonte remota.
+- [x] O que está em **Fora de escopo (v1)** do PRD continua fora.
 
 ## Perguntas abertas, resolvidas na fase 0
 
@@ -232,13 +232,13 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
 | Fase | Estado | Verificação |
 | --- | --- | --- |
 | 0 — contrato das rotas | concluída em 2026-10-22 | `docs/api-contract.md` |
-| 1 — núcleo de dados | concluída em 2026-10-22 | `node scripts/check-overview.ts` — 9 casos |
+| 1 — núcleo de dados | concluída em 2026-10-22 | `node scripts/check-overview.ts` — 13 casos |
 | 2 — endpoint `/oc-api/overview` | concluída em 2026-10-22 | `node scripts/check-endpoint.ts` — 200, 400, 405 e queda total |
-| 3 — casca e atualização | concluída em 2026-10-22 | `node scripts/check-refresh.ts` — 9 casos |
-| 4 — KPIs e séries | concluída em 2026-10-22 | `node scripts/check-series.ts` — 5 casos; `node scripts/check-panels.ts` — 6 casos |
-| 5 — rankings e tabelas | concluída em 2026-10-22 | `node scripts/check-overview.ts` — 10 casos; `node scripts/check-panels.ts` — 7 casos |
-| 6 — leitura e serviço | concluída em 2026-10-22 | `node scripts/check-reading.ts` — 8 casos; `node scripts/check-panels.ts` — 8 casos |
-| 7 | pendente | — |
+| 3 — casca e atualização | concluída em 2026-10-22 | `node scripts/check-refresh.ts` — 10 casos |
+| 4 — KPIs e séries | concluída em 2026-10-22 | `node scripts/check-series.ts` — 5 casos; `node scripts/check-panels.ts` — 15 casos |
+| 5 — rankings e tabelas | concluída em 2026-10-22 | `node scripts/check-overview.ts` — 13 casos; `node scripts/check-panels.ts` — 15 casos |
+| 6 — leitura e serviço | concluída em 2026-10-22 | `node scripts/check-reading.ts` — 8 casos; `node scripts/check-panels.ts` — 15 casos |
+| 7 — revisão e fechamento | concluída em 2026-10-22 | rubrica aplicada; degradação rota por rota; cache e intervalo corrigidos |
 
 ## Decisões registradas
 
@@ -255,4 +255,11 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
   recentes e o total do período; assim o período "tudo" não trava a interface. Fase 5.
 - **Nada no texto do período é estimado.** Cada frase exige o número que a sustenta: se aquela
   fonte falhou, a frase não existe. Zero falhas vira frase afirmativa, nunca "0%". Fase 6.
+- **Cache tem teto e poda.** A chave inclui `from`/`to`, que qualquer URL pode variar; sem poda o
+  mapa cresceria para sempre. Entrada vencida sai e, acima de 50, sai a mais antiga. Fase 7.
+- **Intervalo acima de 4.000 dias é recusado com 400.** O teto existe para a série não virar laço
+  longo; passar dele é erro de entrada, não truncamento silencioso. Se a série de "tudo" bater no
+  teto, a cobertura é declarada parcial. Fase 7.
+- **Falha na última tentativa muda a fase, mesmo com dado velho na tela.** O TopBar não pode dizer
+  "atualizado" enquanto o aviso acima diz que a atualização falhou. Fase 7.
 
