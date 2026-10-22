@@ -224,3 +224,16 @@ Estas respostas vêm da observação das rotas, não de decisão de produto:
 8. `agent` conta agentes carregados ou configurados?
 
 Se alguma resposta exigir ampliar escopo, pare e consulte. Não decida sozinho.
+
+Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
+
+## Status
+
+| Fase | Estado | Fechamento |
+| --- | --- | --- |
+| 0 — contrato das rotas | concluída em 2026-10-22 | `5ab92a5` |
+| 1 — núcleo de dados | concluída em 2026-10-22 | `2794d68` |
+| 2 — endpoint `/oc-api/overview` | pendente | — |
+| 3 a 7 | pendente | — |
+
+Verificação da fase 1: `node scripts/check-overview.ts`, nove casos, todos passando.
