@@ -1,4 +1,7 @@
-import { Diagnostics } from './components/Diagnostics.tsx';
+import { ActivityPanel } from './components/charts/ActivityPanel.tsx';
+import { CostPanel } from './components/charts/CostPanel.tsx';
+import { TokenPanel } from './components/charts/TokenPanel.tsx';
+import { KpiSection } from './components/KpiSection.tsx';
 import { TopBar, type ServiceState } from './components/TopBar.tsx';
 import { useOverview } from './client/useOverview.ts';
 
@@ -47,7 +50,25 @@ export function App() {
         )}
 
         {data ? (
-          <Diagnostics overview={data} />
+          <>
+            <KpiSection stats={data.stats} />
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <ActivityPanel daily={data.daily} />
+              <TokenPanel daily={data.daily} />
+            </div>
+
+            <CostPanel daily={data.daily} />
+
+            <section className="rounded-xl border border-neutral-200 bg-white px-5 py-4">
+              <h2 className="text-sm font-semibold">De onde vêm os números</h2>
+              <p className="mt-1 text-sm text-neutral-600">
+                Tokens e custo por dia são calculados a partir das sessões, agrupados pelo dia de
+                criação. Os totais do topo vêm do agregado do serviço. Quando as duas fontes
+                divergem, cada painel mantém a sua: o topo não é recalculado a partir da série.
+              </p>
+            </section>
+          </>
         ) : (
           <section className="rounded-xl border border-neutral-200 bg-white px-5 py-10 text-center">
             <p className="text-sm text-neutral-500">
