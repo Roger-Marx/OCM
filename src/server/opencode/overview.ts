@@ -18,7 +18,7 @@ import type {
   SessionSummary,
 } from '../../api/overview.ts';
 import { fetchRoute, type ErrorKind, type RouteError, type RouteFetcher } from './cli.ts';
-import { buildDaily, dayKey, daysBetween, observedSpan } from './daily.ts';
+import { buildDaily, countDays, dayKey, daysBetween, observedSpan } from './daily.ts';
 import { resolvePeriod, type PeriodInput } from './period.ts';
 
 export type {
@@ -54,6 +54,7 @@ export interface OverviewClient {
 }
 
 export const CACHE_TTL_MS = 10_000;
+export const CACHE_MAX_ENTRIES = 50;
 export const SESSION_PAGE_LIMIT = 100;
 export const SESSION_MAX_PAGES = 50;
 export const RECENT_SESSIONS = 20;
@@ -209,14 +210,20 @@ async function load(period: Period, deps: Required<OverviewDeps>): Promise<Overv
   const hasSessions = !(collected.error && collected.items.length === 0);
 
   let dates: string[] = [];
+  let truncated = false;
+
   if (period.preset === 'all') {
     const span = observedSpan(hasStats ? stats.data.data.activity : null, hasSessions ? inPeriod : null, period.timezone);
     dates = span ? daysBetween(span.first, span.last) : [];
+    truncated = span ? dates.length < countDays(span.first, span.last) : false;
   } else {
     // `to` é exclusivo: o último instante do período é `to - 1`. Sem isso, uma janela
     // que termina exatamente na meia-noite local ganha um dia vazio no gráfico.
     const lastInstant = Math.max(period.to - 1, period.from);
-    dates = daysBetween(dayKey(period.from, period.timezone), dayKey(lastInstant, period.timezone));
+    const firstDay = dayKey(period.from, period.timezone);
+    const lastDay = dayKey(lastInstant, period.timezone);
+    dates = daysBetween(firstDay, lastDay);
+    truncated = dates.length < countDays(firstDay, lastDay);
   }
 
   const points = buildDaily({
@@ -230,7 +237,7 @@ async function load(period: Period, deps: Required<OverviewDeps>): Promise<Overv
     hasStats || hasSessions
       ? {
           status: 'ok',
-          data: { points, coversWholePeriod: collected.complete },
+          data: { points, coversWholePeriod: collected.complete && !truncated },
         }
       : {
           status: 'error',
@@ -282,6 +289,26 @@ async function load(period: Period, deps: Required<OverviewDeps>): Promise<Overv
   };
 }
 
+/**
+ * A chave inclui `from`/`to`, que qualquer URL pode variar: sem poda, o mapa
+ * cresceria para sempre. Vencido sai; acima do teto, sai o mais antigo na ordem de
+ * inserção (que é praticamente a ordem de vencimento).
+ */
+function pruneCache(
+  cache: Map<string, { expiresAt: number; value: unknown }>,
+  now: number,
+): void {
+  for (const [key, entry] of cache) {
+    if (entry.expiresAt <= now) cache.delete(key);
+  }
+
+  while (cache.size >= CACHE_MAX_ENTRIES) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
+
 export function createOverview(deps: OverviewDeps = {}): OverviewClient {
   const resolved: Required<OverviewDeps> = {
     fetchRoute: deps.fetchRoute ?? fetchRoute,
@@ -308,13 +335,17 @@ export function createOverview(deps: OverviewDeps = {}): OverviewClient {
       }
 
       const key = keyFor(request, period.period);
+      const nowMs = resolved.now();
+
       const cached = cache.get(key);
-      if (cached && cached.expiresAt > resolved.now()) {
+      if (cached && cached.expiresAt > nowMs) {
         return { ok: true, overview: await cached.value };
       }
 
+      pruneCache(cache, nowMs);
+
       const value = load(period.period, resolved);
-      cache.set(key, { expiresAt: resolved.now() + CACHE_TTL_MS, value });
+      cache.set(key, { expiresAt: nowMs + CACHE_TTL_MS, value });
 
       return { ok: true, overview: await value };
     },

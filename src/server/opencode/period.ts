@@ -1,5 +1,6 @@
 import type { EpochMs } from '../../contract/types.ts';
 import { PRESETS, type Period, type PeriodPreset } from '../../api/overview.ts';
+import { MAX_SERIES_DAYS } from './daily.ts';
 
 export type { Period, PeriodPreset } from '../../api/overview.ts';
 
@@ -75,6 +76,15 @@ export function resolvePeriod(
     }
     if (from >= to) {
       return { ok: false, error: { field: 'from', message: 'O início precisa ser anterior ao fim.' } };
+    }
+    if ((to - from) / DAY_MS > MAX_SERIES_DAYS) {
+      return {
+        ok: false,
+        error: {
+          field: 'from',
+          message: `O intervalo passa de ${MAX_SERIES_DAYS.toLocaleString('pt-BR')} dias. Use um período menor.`,
+        },
+      };
     }
 
     return { ok: true, period: { preset: presetRaw, from, to, timezone } };

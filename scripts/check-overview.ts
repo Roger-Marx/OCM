@@ -135,7 +135,8 @@ function StatusDetail(part: { status: string; error?: { message: string } }): st
   const { fetcher, fake } = fakeFetcher({
     '/api/session': { data: [sessionAt('ses_a', NOW - DAY, 100, 0.01)], cursor: { next: null } },
   });
-  const client = createOverview({ fetchRoute: fetcher, now: () => NOW });
+  let clock = NOW;
+  const client = createOverview({ fetchRoute: fetcher, now: () => clock });
 
   await client.getOverview({ preset: '7d', timezone: TZ });
   const afterFirst = fake.calls;
@@ -144,6 +145,13 @@ function StatusDetail(part: { status: string; error?: { message: string } }): st
   assert.equal(fake.calls, afterFirst, 'segunda requisição bateu no CLI');
   assert.equal(afterFirst, 6, `esperava 6 chamadas, veio ${afterFirst}`);
   pass('cache de 10 s', `${afterFirst} chamadas para 2 requisições`);
+
+  clock = NOW + 11_000;
+  const beforeExpiry = fake.calls;
+  await client.getOverview({ preset: '7d', timezone: TZ });
+
+  assert.equal(fake.calls - beforeExpiry, 6, 'cache vencido não foi renovado');
+  pass('expiração do cache', 'após 10 s, consulta o CLI de novo');
 }
 
 // 3. Degradação total: nada responde, nada lança.
@@ -319,6 +327,44 @@ function StatusDetail(part: { status: string; error?: { message: string } }): st
   }
 
   pass('título sensível', 'caminho e e-mail omitidos, título comum preservado');
+}
+
+// 9. Intervalo absurdo é recusado antes de virar laço de dias.
+{
+  const { fetcher, fake } = fakeFetcher({});
+  const client = createOverview({ fetchRoute: fetcher, now: () => NOW });
+  const result = await client.getOverview({ preset: '30d', from: 0, to: NOW, timezone: TZ });
+
+  assert.ok(!result.ok, 'intervalo de 20 mil dias deveria ser recusado');
+  assert.equal(result.error.kind, 'invalid-input');
+  assert.equal(fake.calls, 0, 'intervalo inválido chegou ao CLI');
+  pass('intervalo longo', 'recusado antes do CLI');
+}
+
+// 10. Série maior que o teto não finge cobertura completa.
+{
+  const longAgo = NOW - 5000 * DAY;
+  const { fetcher } = fakeFetcher({
+    '/api/experimental/session/stats': { data: zeroStats([], 2) },
+    '/api/session': {
+      data: [sessionAt('ses_new', NOW - DAY, 1, 0), sessionAt('ses_old', longAgo, 1, 0)],
+      cursor: { next: null },
+    },
+  });
+
+  const client = createOverview({ fetchRoute: fetcher, now: () => NOW });
+  const result = await client.getOverview({ preset: 'all', timezone: TZ });
+
+  assert.ok(result.ok);
+  const { daily } = result.overview;
+  assert.equal(daily.status, 'ok');
+
+  if (daily.status === 'ok') {
+    assert.equal(daily.data.points.length, 4000, 'série deveria parar no teto');
+    assert.equal(daily.data.coversWholePeriod, false, 'cobertura deveria ser declarada parcial');
+  }
+
+  pass('série no teto', '4.000 dias com cobertura declarada parcial');
 }
 
 console.log(`\n${checks} verificações passaram`);

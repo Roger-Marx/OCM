@@ -40,8 +40,14 @@ export function addDays(date: IsoDate, amount: number): IsoDate {
 /**
  * Dias entre duas datas, inclusive nas pontas. Aritmética em UTC de propósito:
  * somar 24 h num fuso com horário de verão pularia ou repetiria um dia.
+ *
+ * O teto existe para uma URL com intervalo absurdo não virar laço longo. Quem
+ * monta a série compara o resultado com `countDays` e marca cobertura incompleta
+ * em vez de fingir que a série está inteira.
  */
-export function daysBetween(first: IsoDate, last: IsoDate, guard = 4000): IsoDate[] {
+export const MAX_SERIES_DAYS = 4000;
+
+export function daysBetween(first: IsoDate, last: IsoDate, guard = MAX_SERIES_DAYS): IsoDate[] {
   const out: IsoDate[] = [];
   let cursor = first;
 
@@ -51,6 +57,13 @@ export function daysBetween(first: IsoDate, last: IsoDate, guard = 4000): IsoDat
   }
 
   return out;
+}
+
+/** Quantos dias o intervalo pede, contando as duas pontas. */
+export function countDays(first: IsoDate, last: IsoDate): number {
+  const start = Date.parse(`${first}T00:00:00Z`);
+  const end = Date.parse(`${last}T00:00:00Z`);
+  return Math.floor((end - start) / DAY_MS) + 1;
 }
 
 const emptyTokens = (): TokenUsage => ({
