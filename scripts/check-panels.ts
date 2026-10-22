@@ -368,6 +368,107 @@ expect(
 );
 pass('série parcial', 'cobertura incompleta avisada no rodapé');
 
+/**
+ * Degradação rota por rota: cada cenário derruba uma fonte só e confere o painel
+ * que depende dela. O resto da página tem que seguir de pé.
+ */
+function unavailableCount(value: string): number {
+  return (value.match(/Indisponível nesta leitura/g) ?? []).length;
+}
+
+function errorPart(): unknown {
+  return {
+    status: 'error',
+    error: { kind: 'cli-error', message: 'Fonte fora do ar neste teste.' },
+  };
+}
+
+const routeScenarios: Array<{
+  part: string;
+  overrides: Record<string, unknown>;
+  verify: (value: string) => void;
+}> = [
+  {
+    part: 'stats',
+    overrides: { stats: errorPart() },
+    verify: (value) => {
+      expect(
+        unavailableCount(value) === 3,
+        'rota stats',
+        `${unavailableCount(value)} painéis fora (esperava KPI, modelos e ferramentas)`,
+      );
+      expect(value.includes('Corrige o login do painel'), 'rota stats', 'sessões sumiram junto');
+    },
+  },
+  {
+    part: 'daily',
+    overrides: { daily: errorPart() },
+    verify: (value) => {
+      expect(
+        unavailableCount(value) === 3,
+        'rota daily',
+        `${unavailableCount(value)} painéis fora (esperava atividade, tokens e custo)`,
+      );
+      expect(value.includes('Tokens de entrada'), 'rota daily', 'KPIs sumiram junto');
+      expect(value.includes('Leitura do período'), 'rota daily', 'leitura sumiu junto');
+    },
+  },
+  {
+    part: 'sessions',
+    overrides: { sessions: errorPart() },
+    verify: (value) => {
+      expect(unavailableCount(value) === 1, 'rota sessions', `${unavailableCount(value)} painéis fora`);
+      expect(value.includes('Sessões recentes'), 'rota sessions', 'painel não apareceu');
+      expect(value.includes('claude-sonnet-4-5'), 'rota sessions', 'modelos sumiram junto');
+    },
+  },
+  {
+    part: 'agents',
+    overrides: { agents: errorPart() },
+    verify: (value) => {
+      expect(unavailableCount(value) === 1, 'rota agents', `${unavailableCount(value)} painéis fora`);
+      expect(value.includes('claude-sonnet-4-5'), 'rota agents', 'modelos sumiram junto');
+    },
+  },
+  {
+    part: 'active',
+    overrides: { active: errorPart() },
+    verify: (value) => {
+      expect(unavailableCount(value) === 0, 'rota active', 'não deveria haver painel inteiro fora');
+      expect(
+        value.includes('Sessões em execução—'),
+        'rota active',
+        'contador de sessões ativas deveria virar travessão',
+      );
+    },
+  },
+  {
+    part: 'service',
+    overrides: { service: errorPart() },
+    verify: (value) => {
+      expect(value.includes('indisponível'), 'rota service', 'estado não virou indisponível');
+      expect(value.includes('Fonte fora do ar neste teste.'), 'rota service', 'motivo ausente');
+      expect(value.includes('Leitura do período'), 'rota service', 'leitura sumiu junto');
+    },
+  },
+  {
+    part: 'location',
+    overrides: { location: errorPart() },
+    verify: (value) => {
+      expect(value.includes('Diretório—'), 'rota location', 'diretório deveria virar travessão');
+      expect(!value.includes('~'), 'rota location', 'diretório antigo continuou na tela');
+    },
+  },
+];
+
+for (const scenario of routeScenarios) {
+  response = overview(scenario.overrides);
+  await unmount();
+  await mount();
+  scenario.verify(text());
+  pass(`rota ${scenario.part}`, 'falha isolada, resto da página de pé');
+}
+
 await unmount();
 
 await vite.close();
