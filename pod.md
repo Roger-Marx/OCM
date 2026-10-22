@@ -237,7 +237,8 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
 | 3 — casca e atualização | concluída em 2026-10-22 | `node scripts/check-refresh.ts` — 9 casos |
 | 4 — KPIs e séries | concluída em 2026-10-22 | `node scripts/check-series.ts` — 5 casos; `node scripts/check-panels.ts` — 6 casos |
 | 5 — rankings e tabelas | concluída em 2026-10-22 | `node scripts/check-overview.ts` — 10 casos; `node scripts/check-panels.ts` — 7 casos |
-| 6 a 7 | pendente | — |
+| 6 — leitura e serviço | concluída em 2026-10-22 | `node scripts/check-reading.ts` — 8 casos; `node scripts/check-panels.ts` — 8 casos |
+| 7 | pendente | — |
 
 ## Decisões registradas
 
@@ -252,4 +253,6 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
   dado sensível na tela. A decisão é do servidor, então o título nem chega ao navegador. Fase 5.
 - **Paginação por cursor fica no servidor.** O navegador recebe uma página com as sessões mais
   recentes e o total do período; assim o período "tudo" não trava a interface. Fase 5.
+- **Nada no texto do período é estimado.** Cada frase exige o número que a sustenta: se aquela
+  fonte falhou, a frase não existe. Zero falhas vira frase afirmativa, nunca "0%". Fase 6.
 
