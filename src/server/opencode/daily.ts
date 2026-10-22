@@ -1,16 +1,12 @@
 import type { ActivityDay, EpochMs, IsoDate, SessionInfo, TokenUsage, Usd } from '../../contract/types.ts';
+import type { DailyPoint } from '../../api/overview.ts';
 
 /**
  * Série diária derivada. Cada campo é `null` quando a fonte daquele número não
  * respondeu — a interface desenha lacuna, não zero. Zero é um dado; lacuna é ausência.
  */
-export interface DailyPoint {
-  date: IsoDate;
-  steps: number | null;
-  sessionsStarted: number | null;
-  tokens: TokenUsage | null;
-  cost: Usd | null;
-}
+export type { DailyPoint } from '../../api/overview.ts';
+
 
 const DAY_MS = 86_400_000;
 

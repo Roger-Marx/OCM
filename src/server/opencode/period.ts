@@ -1,16 +1,7 @@
 import type { EpochMs } from '../../contract/types.ts';
+import { PRESETS, type Period, type PeriodPreset } from '../../api/overview.ts';
 
-/** Períodos que a barra superior oferece. `all` é tudo que o serviço conhece. */
-export type PeriodPreset = '1d' | '7d' | '30d' | '90d' | 'all';
-
-export const PRESETS: readonly PeriodPreset[] = ['1d', '7d', '30d', '90d', 'all'];
-
-export interface Period {
-  preset: PeriodPreset;
-  from: EpochMs;
-  to: EpochMs;
-  timezone: string;
-}
+export type { Period, PeriodPreset } from '../../api/overview.ts';
 
 export interface PeriodError {
   field: 'preset' | 'from' | 'to' | 'timezone';

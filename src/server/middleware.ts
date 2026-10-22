@@ -1,7 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { homedir } from 'node:os';
 import { createOverview } from './opencode/index.ts';
-import type { Overview, OverviewError } from './opencode/overview.ts';
+import type { Overview } from './opencode/overview.ts';
+import type { OverviewError, OverviewResponse } from '../api/overview.ts';
 import type { PeriodInput } from './opencode/period.ts';
 
 /**
@@ -37,7 +38,7 @@ export function displayPath(directory: string): string {
 }
 
 /** Projeção enviada ao navegador: mesma forma, sem caminho absoluto. */
-function toPublic(overview: Overview): unknown {
+function toPublic(overview: Overview): OverviewResponse {
   const { location, ...rest } = overview;
 
   return {

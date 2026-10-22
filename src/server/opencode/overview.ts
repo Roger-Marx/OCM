@@ -1,79 +1,43 @@
 import type {
   ActiveSessionsResponse,
-  AgentInfo,
   AgentListResponse,
-  EpochMs,
   InfoResponse,
   LocationResponse,
   SessionInfo,
   SessionListResponse,
   SessionStats,
   StatsResponse,
-  TokenUsage,
-  Usd,
 } from '../../contract/types.ts';
+import type {
+  AgentSummary,
+  DailySummary,
+  OverviewBase,
+  OverviewError,
+  Part,
+  Period,
+  SessionSummary,
+} from '../../api/overview.ts';
 import { fetchRoute, type ErrorKind, type RouteError, type RouteFetcher } from './cli.ts';
-import { buildDaily, dayKey, daysBetween, observedSpan, type DailyPoint } from './daily.ts';
-import { resolvePeriod, type Period, type PeriodInput } from './period.ts';
+import { buildDaily, dayKey, daysBetween, observedSpan } from './daily.ts';
+import { resolvePeriod, type PeriodInput } from './period.ts';
 
-/** Códigos de erro que chegam ao navegador. `detail` nunca sai do servidor. */
-export interface OverviewError {
-  kind: ErrorKind | 'invalid-input';
-  message: string;
-}
+export type {
+  AgentSummary,
+  DailyPoint,
+  DailySummary,
+  OverviewError,
+  OverviewResponse,
+  Part,
+  Period,
+  PeriodPreset,
+  SessionSummary,
+} from '../../api/overview.ts';
 
-export type Part<T> = { status: 'ok'; data: T } | { status: 'error'; error: OverviewError };
-
-/** Sessão já reduzida ao que a tabela mostra: sem caminho, título truncado. */
-export interface SessionSummary {
-  id: string;
-  parentID?: string;
-  agent?: string;
-  model?: { id: string; providerID: string; variant?: string };
-  cost: Usd;
-  tokens: TokenUsage;
-  outcome?: 'succeeded' | 'failed' | 'interrupted';
-  created: EpochMs;
-  updated: EpochMs;
-  title?: string;
-}
-
-export interface AgentSummary {
-  id: string;
-  name: string;
-  mode: AgentInfo['mode'];
-  hidden: boolean;
-  model?: { id: string; providerID: string; variant?: string };
-  steps?: number;
-}
-
-export interface ServiceSummary {
-  version: string;
-  pid: number;
-  persistentPty: boolean | null;
-}
-
-export interface DailySummary {
-  points: DailyPoint[];
-  /**
-   * `false` quando a listagem de sessões parou no teto de páginas ou falhou no meio.
-   * A interface precisa dizer que a série é parcial em vez de apresentar número menor
-   * como se fosse total.
-   */
-  coversWholePeriod: boolean;
-}
-
-export interface Overview {
-  requestedAt: EpochMs;
-  period: Period;
-  stats: Part<SessionStats>;
-  daily: Part<DailySummary>;
-  sessions: Part<{ items: SessionSummary[]; total: number; complete: boolean }>;
-  agents: Part<{ total: number; items: AgentSummary[] }>;
-  active: Part<{ total: number }>;
-  service: Part<ServiceSummary>;
-  location: Part<{ directory: string }>;
-}
+/**
+ * Overview interno. Difere do corpo público em um ponto só: aqui a localização
+ * carrega o caminho cru, que o middleware abrevia antes de responder.
+ */
+export type Overview = OverviewBase & { location: Part<{ directory: string }> };
 
 export interface OverviewRequest extends PeriodInput {}
 
