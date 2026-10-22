@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "check:overview": "node scripts/check-overview.ts",
-    "check:refresh": "node scripts/check-refresh.ts"
+    "check:refresh": "node scripts/check-refresh.ts",
+    "check:series": "node scripts/check-series.ts",
+    "check:panels": "node scripts/check-panels.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
