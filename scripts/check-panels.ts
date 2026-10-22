@@ -285,7 +285,44 @@ expect(text().includes('1,5 s'), 'ferramentas', 'p50 não saiu em segundos');
 expect(text().includes('2 de 2 sessões no período'), 'sessões', 'rodapé de sessões errado');
 expect(text().includes('Sem título'), 'sessões', 'título ausente não virou marcador');
 expect(text().includes('Corrige o login do painel'), 'sessões', 'título comum não apareceu');
-pass('tabelas', 'modelos, ferramentas, agentes e sessões com dado');
+expect(text().includes('Leitura do período'), 'leitura', 'painel de leitura ausente');
+expect(text().includes('56 sessões'), 'leitura', 'volume do período ausente');
+expect(text().includes('900 passos'), 'leitura', 'passos do período ausentes');
+expect(
+  text().includes('Todo o custo do período veio de'),
+  'leitura',
+  'frase de custo ausente com um modelo só',
+);
+expect(text().includes('Serviço'), 'serviço', 'painel de serviço ausente');
+expect(text().includes('0.0.0'), 'serviço', 'versão ausente');
+expect(text().includes('PTY persistente'), 'serviço', 'linha de PTY ausente');
+expect(text().includes('~'), 'serviço', 'diretório do serviço ausente');
+expect(text().includes('a página atualiza a cada 30 s'), 'nota', 'ritmo de atualização ausente');
+pass('tabelas, leitura e serviço', 'números, texto do período e estado do serviço');
+
+response = overview({
+  service: {
+    status: 'error',
+    error: { kind: 'cli-error', message: 'O CLI do OpenCode não respondeu.' },
+  },
+  location: {
+    status: 'error',
+    error: { kind: 'cli-error', message: 'O CLI do OpenCode não respondeu.' },
+  },
+  active: { status: 'error', error: { kind: 'cli-error', message: 'O CLI do OpenCode não respondeu.' } },
+});
+
+await unmount();
+await mount();
+
+expect(text().includes('indisponível'), 'serviço fora', 'estado indisponível ausente');
+expect(
+  text().includes('O CLI do OpenCode não respondeu.'),
+  'serviço fora',
+  'motivo do serviço ausente',
+);
+expect(text().includes('Leitura do período'), 'serviço fora', 'leitura sumiu junto com o serviço');
+pass('serviço fora', 'estado e motivo no painel; leitura segue com os dados do período');
 
 response = overview({
   stats: { status: 'error', error: { kind: 'cli-error', message: 'O serviço não respondeu.' } },
