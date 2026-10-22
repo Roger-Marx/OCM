@@ -276,4 +276,49 @@ function StatusDetail(part: { status: string; error?: { message: string } }): st
   pass('período tudo', 'série limitada ao intervalo com dado');
 }
 
+// 8. Título de sessão com caminho ou e-mail não sai do servidor.
+{
+  const long = 'a'.repeat(120);
+  const { fetcher } = fakeFetcher({
+    '/api/session': {
+      data: [
+        sessionAt('ses_ok', NOW - DAY, 10, 0),
+        sessionAt('ses_path', NOW - DAY, 10, 0),
+        sessionAt('ses_email', NOW - DAY, 10, 0),
+        sessionAt('ses_long', NOW - DAY, 10, 0),
+      ].map((session, index) => ({
+        ...session,
+        title: [
+          'Corrige o login do painel',
+          'Abrir D:\\projetos\\ocm\\src\\App.tsx',
+          'falar com roger@example.com sobre o build',
+          long,
+        ][index],
+      })),
+      cursor: { next: null },
+    },
+  });
+
+  const client = createOverview({ fetchRoute: fetcher, now: () => NOW });
+  const result = await client.getOverview({ preset: '7d', timezone: TZ });
+
+  assert.ok(result.ok);
+  const sessions = result.overview.sessions;
+  assert.equal(sessions.status, 'ok');
+
+  if (sessions.status === 'ok') {
+    const byId = new Map(sessions.data.items.map((item) => [item.id, item.title]));
+    assert.equal(byId.get('ses_ok'), 'Corrige o login do painel', 'título comum deveria ficar');
+    assert.equal(byId.get('ses_path'), undefined, 'título com caminho deveria sumir');
+    assert.equal(byId.get('ses_email'), undefined, 'título com e-mail deveria sumir');
+    assert.ok((byId.get('ses_long') ?? '').length <= 80, 'título longo deveria encurtar');
+
+    const serialized = JSON.stringify(result.overview);
+    assert.ok(!serialized.includes('projetos\\\\ocm'), 'caminho vazou no payload');
+    assert.ok(!serialized.includes('roger@example.com'), 'e-mail vazou no payload');
+  }
+
+  pass('título sensível', 'caminho e e-mail omitidos, título comum preservado');
+}
+
 console.log(`\n${checks} verificações passaram`);

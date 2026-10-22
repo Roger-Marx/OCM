@@ -137,10 +137,26 @@ async function collectSessions(
   return { items, complete: false };
 }
 
-function truncateTitle(title: string | undefined): string | undefined {
+const SENSITIVE_TITLE = [
+  /[A-Za-z]:\\/, // C:\...
+  /\\\\[^\\\s]+\\/, // \\servidor\pasta
+  /(?:^|[\s("'[])\/[^\s/\\]+\/[^\s/\\]+/, // /home/usuario, /usr/local
+  /(?:^|[\s("'[])~\//, // ~/algo
+  /[\w.+-]+@[\w-]+\.[\w.-]+/, // e-mail
+];
+
+/**
+ * Título de sessão é texto do usuário: pode carregar caminho local ou e-mail sem
+ * querer. Nesses casos o título inteiro é omitido, não cortado — cortar deixa o
+ * resto do dado sensível na tela.
+ */
+export function sanitizeTitle(title: string | undefined): string | undefined {
   if (!title) return undefined;
+
   const clean = title.replace(/\s+/g, ' ').trim();
   if (clean.length === 0) return undefined;
+  if (SENSITIVE_TITLE.some((pattern) => pattern.test(clean))) return undefined;
+
   return clean.length > TITLE_MAX ? `${clean.slice(0, TITLE_MAX - 1)}…` : clean;
 }
 
@@ -155,7 +171,7 @@ function summarizeSession(session: SessionInfo): SessionSummary {
     outcome: session.outcome,
     created: session.time.created,
     updated: session.time.updated,
-    title: truncateTitle(session.title),
+    title: sanitizeTitle(session.title),
   };
 }
 
