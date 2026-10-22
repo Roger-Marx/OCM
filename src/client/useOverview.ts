@@ -140,14 +140,16 @@ export function useOverview(initialPeriod: PeriodPreset = '7d'): OverviewControl
 
   const data = loaded && loaded.period === period ? loaded.data : null;
 
-  const phase: OverviewPhase = data
-    ? busy
+  // Falha na última tentativa vence "pronto": o TopBar não pode dizer que está
+  // atualizado enquanto o aviso acima diz que a atualização falhou.
+  const phase: OverviewPhase = busy
+    ? data
       ? 'refreshing'
-      : 'ready'
-    : busy
-      ? 'loading'
-      : error
-        ? 'error'
+      : 'loading'
+    : error
+      ? 'error'
+      : data
+        ? 'ready'
         : 'loading';
 
   return {

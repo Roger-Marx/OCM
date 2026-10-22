@@ -232,7 +232,19 @@ expect(hook().error !== null, 'falha de rede', 'erro não propagado');
 expect(hook().data !== null, 'falha de rede', 'último dado bom foi apagado');
 expect(hook().data === keptData, 'falha de rede', 'dado mudou sem resposta');
 expect(!hook().error?.includes('rede caiu'), 'falha de rede', 'detalhe cru vazou para a interface');
-pass('falha de rede', 'erro visível, último dado bom preservado');
+expect(hook().phase === 'error', 'falha de rede', `fase ${hook().phase} com dados velhos na tela`);
+pass('falha de rede', 'erro visível, fase de falha, último dado bom preservado');
+
+handler = async (url) => fakeOverview(url.searchParams.get('preset') ?? '?');
+
+await React.act(async () => {
+  hook().refresh();
+});
+await flush();
+
+expect(hook().error === null, 'recuperação', 'erro não foi limpo');
+expect(hook().phase === 'ready', 'recuperação', `fase ${hook().phase}`);
+pass('recuperação', 'erro limpo e fase volta a pronto');
 
 await React.act(async () => {
   root.unmount();
