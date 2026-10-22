@@ -11,7 +11,8 @@
     "check:overview": "node scripts/check-overview.ts",
     "check:refresh": "node scripts/check-refresh.ts",
     "check:series": "node scripts/check-series.ts",
-    "check:panels": "node scripts/check-panels.ts"
+    "check:panels": "node scripts/check-panels.ts",
+    "check:reading": "node scripts/check-reading.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

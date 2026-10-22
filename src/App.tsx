@@ -4,6 +4,8 @@ import { TokenPanel } from './components/charts/TokenPanel.tsx';
 import { KpiSection } from './components/KpiSection.tsx';
 import { AgentsPanel } from './components/panels/AgentsPanel.tsx';
 import { ModelsPanel } from './components/panels/ModelsPanel.tsx';
+import { ReadingPanel } from './components/panels/ReadingPanel.tsx';
+import { ServicePanel } from './components/panels/ServicePanel.tsx';
 import { SessionsPanel } from './components/panels/SessionsPanel.tsx';
 import { ToolsPanel } from './components/panels/ToolsPanel.tsx';
 import { TopBar, type ServiceState } from './components/TopBar.tsx';
@@ -67,7 +69,11 @@ export function App() {
             <ModelsPanel stats={data.stats} />
             <AgentsPanel agents={data.agents} />
             <ToolsPanel stats={data.stats} />
+
+            <ReadingPanel overview={data} />
             <SessionsPanel sessions={data.sessions} />
+
+            <ServicePanel service={data.service} location={data.location} active={data.active} />
 
             <section className="rounded-xl border border-neutral-200 bg-white px-5 py-4">
               <h2 className="text-sm font-semibold">De onde vêm os números</h2>
@@ -76,6 +82,21 @@ export function App() {
                 criação. Os totais do topo vêm do agregado do serviço. Quando as duas fontes
                 divergem, cada painel mantém a sua: o topo não é recalculado a partir da série.
               </p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-600">
+                <li>
+                  O servidor agrega totais, atividade por dia, modelos e ferramentas a partir de{' '}
+                  <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs">stats</code>, e
+                  pagina as sessões por cursor.
+                </li>
+                <li>
+                  Aqui no navegador ficam o acumulado de custo, a taxa de falha por ferramenta e o
+                  texto da leitura.
+                </li>
+                <li>
+                  O servidor guarda a última leitura por 10 s; a página atualiza a cada 30 s, ou na
+                  hora, no botão Atualizar.
+                </li>
+              </ul>
             </section>
           </>
         ) : (
