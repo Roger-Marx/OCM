@@ -1,0 +1,14 @@
+# dependências
+node_modules/
+
+# build
+dist/
+.vite/
+
+# amostras de contrato da fase 0 (podem conter dado local)
+.scratch/
+
+# ambiente
+.env
+.env.*
+!.env.example
