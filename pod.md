@@ -229,11 +229,18 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
 
 ## Status
 
-| Fase | Estado | Fechamento |
+| Fase | Estado | Verificação |
 | --- | --- | --- |
-| 0 — contrato das rotas | concluída em 2026-10-22 | `5ab92a5` |
-| 1 — núcleo de dados | concluída em 2026-10-22 | `2794d68` |
-| 2 — endpoint `/oc-api/overview` | pendente | — |
-| 3 a 7 | pendente | — |
+| 0 — contrato das rotas | concluída em 2026-10-22 | `docs/api-contract.md` |
+| 1 — núcleo de dados | concluída em 2026-10-22 | `node scripts/check-overview.ts` — 9 casos |
+| 2 — endpoint `/oc-api/overview` | concluída em 2026-10-22 | `node scripts/check-endpoint.ts` — 200, 400, 405 e queda total |
+| 3 — casca e atualização | pendente | — |
+| 4 a 7 | pendente | — |
 
-Verificação da fase 1: `node scripts/check-overview.ts`, nove casos, todos passando.
+## Decisões registradas
+
+- **Custo com 4 casas decimais.** `stats.cost` e a soma das sessões divergem; a exibição usa
+  `0,0000` e mantém a fonte que o PRD nomeia. Decidido em 2026-10-22.
+- **Caminho nunca sai inteiro.** O endpoint manda `~` dentro do perfil do usuário e, fora dele,
+  só os dois últimos segmentos. Decidido na fase 2 para cumprir o critério de não vazar caminho.
+
