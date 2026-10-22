@@ -234,7 +234,7 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
 | 0 — contrato das rotas | concluída em 2026-10-22 | `docs/api-contract.md` |
 | 1 — núcleo de dados | concluída em 2026-10-22 | `node scripts/check-overview.ts` — 9 casos |
 | 2 — endpoint `/oc-api/overview` | concluída em 2026-10-22 | `node scripts/check-endpoint.ts` — 200, 400, 405 e queda total |
-| 3 — casca e atualização | pendente | — |
+| 3 — casca e atualização | concluída em 2026-10-22 | `node scripts/check-refresh.ts` — 9 casos |
 | 4 a 7 | pendente | — |
 
 ## Decisões registradas
@@ -243,4 +243,7 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
   `0,0000` e mantém a fonte que o PRD nomeia. Decidido em 2026-10-22.
 - **Caminho nunca sai inteiro.** O endpoint manda `~` dentro do perfil do usuário e, fora dele,
   só os dois últimos segmentos. Decidido na fase 2 para cumprir o critério de não vazar caminho.
+- **Trocar de período não reaproveita número do período anterior.** Atualizar o mesmo período
+  mantém os números na tela; trocar de período mostra carregamento. Número de 30 dias rotulado
+  como 1 dia é mentira, mesmo por dois segundos. Decidido na fase 3.
 
