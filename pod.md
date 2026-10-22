@@ -236,7 +236,8 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
 | 2 — endpoint `/oc-api/overview` | concluída em 2026-10-22 | `node scripts/check-endpoint.ts` — 200, 400, 405 e queda total |
 | 3 — casca e atualização | concluída em 2026-10-22 | `node scripts/check-refresh.ts` — 9 casos |
 | 4 — KPIs e séries | concluída em 2026-10-22 | `node scripts/check-series.ts` — 5 casos; `node scripts/check-panels.ts` — 6 casos |
-| 5 a 7 | pendente | — |
+| 5 — rankings e tabelas | concluída em 2026-10-22 | `node scripts/check-overview.ts` — 10 casos; `node scripts/check-panels.ts` — 7 casos |
+| 6 a 7 | pendente | — |
 
 ## Decisões registradas
 
@@ -247,4 +248,8 @@ Respostas levantadas em 2026-10-22: `docs/api-contract.md`.
 - **Trocar de período não reaproveita número do período anterior.** Atualizar o mesmo período
   mantém os números na tela; trocar de período mostra carregamento. Número de 30 dias rotulado
   como 1 dia é mentira, mesmo por dois segundos. Decidido na fase 3.
+- **Título de sessão com caminho ou e-mail é omitido, não cortado.** O corte deixaria o resto do
+  dado sensível na tela. A decisão é do servidor, então o título nem chega ao navegador. Fase 5.
+- **Paginação por cursor fica no servidor.** O navegador recebe uma página com as sessões mais
+  recentes e o total do período; assim o período "tudo" não trava a interface. Fase 5.
 
